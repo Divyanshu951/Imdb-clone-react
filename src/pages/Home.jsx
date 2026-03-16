@@ -1,25 +1,23 @@
 import { useState } from "react";
 import NavBar from "../component/NavBar";
+import { Link, useNavigate } from "react-router-dom";
 
 function Home() {
-  const [isSearchbarVisible, setIsSearchbarVisible] = useState(false);
   const [query, setQuery] = useState("");
 
-  function handleSubmit() {
-    console.log(query);
+  const navigate = useNavigate();
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (!query.trim()) return;
+    navigate(`/search/${query}`);
     setQuery("");
-    setIsSearchbarVisible(false);
   }
 
   return (
     <div>
-      <NavBar
-        isSearchbarVisible={isSearchbarVisible}
-        onIsSearchbarVisible={setIsSearchbarVisible}
-        query={query}
-        setQuery={setQuery}
-        handleSubmit={handleSubmit}
-      />
+      <NavBar query={query} setQuery={setQuery} handleSubmit={handleSubmit} />
+      <Link to="/about">About</Link>
     </div>
   );
 }

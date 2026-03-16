@@ -4,10 +4,12 @@
 // Route → Defines individual route paths and their components
 
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import "./App.css";
 
 // STEP 2: Import all page components that will be rendered for different URLs
 import Home from "./pages/Home";
+import SearchResult from "./pages/SearchResult";
+import About from "./component/About";
+import MovieDetails from "./pages/MovieDetails";
 
 function App() {
   return (
@@ -20,6 +22,9 @@ function App() {
         {/* When URL is "/" → Homepage component renders */}
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/home" element={<Home />} />
+        <Route path="search/:query" element={<SearchResult />} />
+        <Route path="movie/:imdbID" element={<MovieDetails />} />
+        <Route path="/about" element={<About />} />
 
         {/* Define a fallback route for unknown URLs */}
         {/* If no route matches → PageNotFound component renders */}
