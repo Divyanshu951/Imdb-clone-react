@@ -2,71 +2,76 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import MovieCard from "../component/MovieCard";
 
-// http://www.omdbapi.com/?apikey=${KEY}&s=${query}
-const KEY = "6ce769c8";
-
 function SearchResult() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-
   const [movieList, setMovieList] = useState([]);
+  const [isLoading, setIsLoading] = useState(true); // Start as true to prevent UI flash
+  const [error, setError] = useState("");
   const { query } = useParams();
 
-  useEffect(
-    function () {
-      async function fetchMovieList() {
-        setIsLoading(true);
-        try {
-          const res = await fetch(
-            `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`,
-          );
-          const data = await res.json();
-          console.log(data);
-          if (data.Response === "True") setMovieList(data.Search);
-          else setError(data.Error);
-          setIsLoading(false);
-        } catch (err) {
-          console.error(err.message);
+  useEffect(() => {
+    // STEP 1: Create an AbortController to cancel fetches if user navigates away fast
+    const controller = new AbortController();
+
+    async function fetchMovies() {
+      setIsLoading(true);
+      setError("");
+
+      try {
+        const res = await fetch(
+          `https://www.omdbapi.com/?apikey=${import.meta.env.VITE_OMDB_API_KEY}&s=${query}`,
+        );
+
+        if (!res.ok) throw new Error("Network response was not ok");
+
+        const data = await res.json();
+
+        if (data.Response === "True") {
+          setMovieList(data.Search);
+        } else {
+          setError(data.Error);
+          setMovieList([]);
         }
+      } catch (err) {
+        // Ignore AbortErrors (they are intentional when unmounting)
+        if (err.name !== "AbortError") {
+          setError(err.message);
+        }
+      } finally {
+        setIsLoading(false);
       }
-      fetchMovieList();
-    },
-    [query],
-  );
+    }
+
+    fetchMovies();
+
+    // STEP 2: Cleanup function runs when component unmounts
+    return () => controller.abort();
+  }, [query]);
 
   return (
     <div>
       <h1>Search Page</h1>
       <p>Search Query: {query}</p>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", // Adaptive columns
-          gap: "30px",
-          padding: "20px",
-          justifyItems: "center",
-        }}
-      >
-        {isLoading ? (
-          <h1>Loading...</h1>
-        ) : !error ? (
-          movieList?.map((movie) => (
+      <div style={styles.grid}>
+        {isLoading && <h2>Loading movies...</h2>}
+        {!isLoading && error && <h2>{error}</h2>}
+        {!isLoading &&
+          !error &&
+          movieList.map((movie) => (
             <MovieCard key={movie.imdbID} movie={movie} />
-          ))
-        ) : (
-          <h1>{error}</h1>
-        )}
+          ))}
       </div>
     </div>
   );
 }
 
-function SearchedMovie({ movie }) {
-  return (
-    <div>
-      <h2>{movie.title}</h2>
-    </div>
-  );
-}
+const styles = {
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+    gap: "30px",
+    padding: "20px",
+    justifyItems: "center",
+  },
+};
 
 export default SearchResult;
