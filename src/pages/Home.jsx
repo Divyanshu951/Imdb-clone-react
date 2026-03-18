@@ -1,24 +1,20 @@
-import { useState } from "react";
-import NavBar from "../component/NavBar";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 function Home() {
-  const [query, setQuery] = useState("");
-
-  const navigate = useNavigate();
-
-  function handleSubmit(e) {
-    e.preventDefault();
-    if (!query.trim()) return;
-    navigate(`/search/${query}`);
-    setQuery("");
-  }
-
   return (
-    <div>
-      <NavBar query={query} setQuery={setQuery} handleSubmit={handleSubmit} />
-      <Link to="/about">About</Link>
-    </div>
+    <>
+      <Link
+        to="/about"
+        style={{
+          position: "fixed",
+          top: "10px",
+          right: "10px",
+          fontSize: "32px",
+        }}
+      >
+        About
+      </Link>
+    </>
   );
 }
 
